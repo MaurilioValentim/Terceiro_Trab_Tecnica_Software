@@ -1,0 +1,30 @@
+#include "driverlib.h"
+#include "board.h"
+#include "shared_vars.h"
+
+#define B0 0.001033F
+#define B1 0.000767F
+#define B2 -0.000266F
+#define A1 -1.521886F
+#define A2 0.521886F
+
+#define REF 20
+#define UL 1
+#define LL 0
+
+float x[3];
+float y[3];
+
+__interrupt void Cla1Task1()
+{
+
+    x[2] = x[1]; x[1] = x[0]; x[0] = REF - vo;
+    y[2] = y[1]; y[1] = y[0];
+    y[0] = B0*x[0] + B1*x[1] + B2*x[2] - A1*y[1] - A2*y[2];
+
+    y[0] = (y[0] > UL) ? UL : y[0];
+    y[0] = (y[0] < LL) ? LL : y[0];
+
+    d = y[0];
+
+}
