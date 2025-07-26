@@ -8,7 +8,12 @@
 #ifndef SHARED_VARS_H_
 #define SHARED_VARS_H_
 
-extern float vo;
-extern float d;
+#define SCALE           50U      // Fundo de escala (V)
+#define MAX_DAC_VAL     4096U    // Shadow_value máximo do DAC
+
+#define ADC_RESOLUTION (SCALE/MAX_DAC_VAL)
+#define DAC_RESOLUTION (MAX_DAC_VAL/SCALE)
+#define ADC_TESTE 0.01221001221001221001221001221001
+
 
 #endif /* SHARED_VARS_H_ */
