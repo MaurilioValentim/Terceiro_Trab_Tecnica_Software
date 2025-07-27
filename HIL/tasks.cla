@@ -12,18 +12,23 @@
 #define UL 1
 #define LL 0
 
+// Priodo do PWM, mesmo do Sysconfig
 #define EPWM_PERIOD 2500.0f
 
+// Constantes do Controle
 float x[3];
 float y[3];
 
+// Constantes para ver os valores
 float32_t vo;
 float d;
 uint16_t adc;
 
 __interrupt void Cla1Task1()
 {
+    // Recebe a tensão de saida do DAC
     adc = ADC_readResult(ADC0_RESULT_BASE, ADC0_SOC0);
+    // Converte para o valor real
     float32_t vo_adc = adc * (float32_t) ADC_TESTE;
     vo =  vo_adc;
     //==========================================
@@ -38,6 +43,7 @@ __interrupt void Cla1Task1()
 
     d = y[0];
 
+    //Atualiza o D do PWM
     EPWM_setCounterCompareValue(myEPWM0_BASE,EPWM_COUNTER_COMPARE_A, (uint16_t) (d*EPWM_PERIOD));
 
 }
