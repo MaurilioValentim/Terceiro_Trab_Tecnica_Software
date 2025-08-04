@@ -13,12 +13,17 @@ const adc              = scripting.addModule("/driverlib/adc.js", {}, false);
 const adc1             = adc.addInstance();
 const cla              = scripting.addModule("/driverlib/cla.js", {}, false);
 const cla1             = cla.addInstance();
+const cmpss            = scripting.addModule("/driverlib/cmpss.js", {}, false);
+const cmpss1           = cmpss.addInstance();
 const cputimer         = scripting.addModule("/driverlib/cputimer.js", {}, false);
 const cputimer1        = cputimer.addInstance();
 const dac              = scripting.addModule("/driverlib/dac.js", {}, false);
 const dac1             = dac.addInstance();
+const dac2             = dac.addInstance();
 const epwm             = scripting.addModule("/driverlib/epwm.js", {}, false);
 const epwm1            = epwm.addInstance();
+const epwmxbar         = scripting.addModule("/driverlib/epwmxbar.js", {}, false);
+const epwmxbar1        = epwmxbar.addInstance();
 const gpio             = scripting.addModule("/driverlib/gpio.js", {}, false);
 const gpio1            = gpio.addInstance();
 const inputxbar_input  = scripting.addModule("/driverlib/inputxbar_input.js", {}, false);
@@ -38,6 +43,7 @@ adc1.soc0SampleWindow               = 15;
 adc1.enabledInts                    = ["ADC_INT_NUMBER1"];
 adc1.enableInterrupt1ContinuousMode = true;
 adc1.enableInterrupt1               = true;
+adc1.soc0Channel                    = "ADC_CH_ADCIN4";
 
 cla1.$name              = "myCLA0";
 cla1.enable_CLA_TASK_2  = false;
@@ -56,19 +62,29 @@ cla1.cpuint_CLA_TASK_8  = false;
 cla1.cpuint_CLA_TASK_4  = false;
 cla1.trigger_CLA_TASK_1 = "CLA_TRIGGER_ADCA1";
 
+cmpss1.$name         = "myCMPSS0";
+cmpss1.cmpssHighName = "myCMPSS0_High";
+cmpss1.enableModule  = true;
+cmpss1.dacValHigh    = 1200;
+
 cputimer1.$name                    = "myCPUTIMER0";
-cputimer1.timerPeriod              = 999;
 cputimer1.enableInterrupt          = true;
 cputimer1.registerInterrupts       = true;
 cputimer1.startTimer               = true;
 cputimer1.emulationMode            = "CPUTIMER_EMULATIONMODE_RUNFREE";
+cputimer1.timerPeriod              = 199;
 cputimer1.timerInt.enableInterrupt = true;
 
 dac1.$name            = "DAC0";
-dac1.dacBase          = "DACB_BASE";
 dac1.referenceVoltage = "DAC_REF_ADC_VREFHI";
 dac1.enableOutput     = true;
 
+dac2.$name            = "DAC1";
+dac2.enableOutput     = true;
+dac2.dacBase          = "DACB_BASE";
+dac2.referenceVoltage = "DAC_REF_ADC_VREFHI";
+
+epwm1.$name                                                      = "myEPWM0";
 epwm1.epwmTimebase_hsClockDiv                                    = "EPWM_HSCLOCK_DIVIDER_1";
 epwm1.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
 epwm1.epwmTimebase_syncOutPulseMode                              = "EPWM_SYNC_OUT_PULSE_DISABLED";
@@ -80,12 +96,19 @@ epwm1.epwmEventTrigger_EPWM_SOC_A_triggerEnable                  = true;
 epwm1.epwmEventTrigger_EPWM_SOC_A_triggerEventPrescalar          = "1";
 epwm1.epwmEventTrigger_EPWM_SOC_A_triggerSource                  = "EPWM_SOC_TBCTR_PERIOD";
 epwm1.epwmTimebase_period                                        = 2500;
-epwm1.$name                                                      = "myEPWM0";
+epwm1.epwmTripZone_EPWM_TZ_ACTION_EVENT_TZA                      = "EPWM_TZ_ACTION_LOW";
+epwm1.epwmTripZone_oneShotSource                                 = ["EPWM_TZ_SIGNAL_DCAEVT1"];
+epwm1.epwmDigitalCompare_EPWM_DC_TYPE_DCAH                       = "EPWM_DC_TRIP_TRIPIN4";
+epwm1.epwmDigitalCompare_EPWM_TZ_DC_OUTPUT_A1                    = "EPWM_TZ_EVENT_DCXH_HIGH";
 epwm1.epwm.$assign                                               = "EPWM1";
 epwm1.epwm.epwm_aPin.$assign                                     = "boosterpack1.40";
 epwm1.epwm.epwm_bPin.$assign                                     = "boosterpack1.39";
 scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM1 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", epwm1.epwm, "epwm_aPin");
 scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM1 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", epwm1.epwm, "epwm_bPin");
+
+epwmxbar1.$name           = "myEPWMXBAR0";
+epwmxbar1.useSourceSelect = true;
+epwmxbar1.sourceSignals   = ["CMPSS1_CTRIPH"];
 
 gpio1.useInterrupt              = true;
 gpio1.$name                     = "GPIO_PWM";

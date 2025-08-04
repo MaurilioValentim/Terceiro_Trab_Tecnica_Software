@@ -13,7 +13,7 @@
 //
 #define F_PWM                  10000.0f     // Frequência de chaveamento (Hz)
 #define T_PWM                  (1.0f / F_PWM) // Período de chaveamento (s)
-#define DT_SIM                 0.000005f    // Passo de simulação (5 µs)
+#define DT_SIM                 0.000001f    // Passo de simulação (5 µs)
 #define N_STEPS_PER_CYCLE      (uint32_t)(T_PWM / DT_SIM) // Passos por ciclo PWM
 
 // Parâmetros do Conversor Buck
@@ -37,6 +37,7 @@ volatile bool g_new_step_ready = false;      // Flag para novo passo de simulaçã
 
 float32_t v_l, i_c;                          // Variaveis para calculos
 volatile uint16_t dac;
+volatile uint16_t CMPSS_teste = 0;
 
 void main(void)
 {
@@ -75,6 +76,11 @@ void main(void)
               else
                   dac = (float)g_vout_sim * (float)DAC_TESTE;
 
+
+              // Teste do CMPSS
+              if(CMPSS_teste == 1){
+                  DAC_setShadowValue(DAC1_BASE, 2000);
+              }
               // Envia o valor de Vo para o ADC, ou seja, envia para o CLA para o controle do pwm
               DAC_setShadowValue(DAC0_BASE, (uint16_t) (dac));
 
