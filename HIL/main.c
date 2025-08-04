@@ -65,7 +65,7 @@ void main(void)
               v_l = g_switch_on ? (VIN) : (VIN - g_vout_sim);
               // Corrente do capacitor
               i_c = g_il_sim - (g_vout_sim * INV_R_LOAD);
-
+              //i_c = g_switch_on ? (-g_vout_sim*INV_R_LOAD) : (g_il_sim - (g_vout_sim * INV_R_LOAD)) ;
               // Atualização via método de Euler
               g_il_sim += INV_L * v_l;
               g_vout_sim += INV_C * i_c;
@@ -80,6 +80,11 @@ void main(void)
               // Teste do CMPSS
               if(CMPSS_teste == 1){
                   DAC_setShadowValue(DAC1_BASE, 2000);
+              }
+              else{
+                  // Clear trip flags
+                  DAC_setShadowValue(DAC1_BASE, 100);
+                  EPWM_clearTripZoneFlag(myEPWM0_BASE, EPWM_TZ_INTERRUPT | EPWM_TZ_FLAG_OST | EPWM_TZ_FLAG_DCAEVT1);
               }
 
               // Envia o valor de Vo para o ADC, ou seja, envia para o CLA para o controle do pwm
