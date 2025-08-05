@@ -17,7 +17,7 @@
 #define N_STEPS_PER_CYCLE      (uint32_t)(T_PWM / DT_SIM) // Passos por ciclo PWM
 
 // Parâmetros do Conversor Buck
-#define VIN                    10.0f       // Tensão de entrada (V)
+#define VIN                    40.0f       // Tensão de entrada (V)
 #define L                      0.001f      // Indutância (H)
 #define C                      0.00001f    // Capacitância (F)
 #define R_LOAD                 10.0f       // Carga resistiva (Ohm)
@@ -61,11 +61,11 @@ void main(void)
               g_new_step_ready = false;
 
               // Tensão no indutor
-              //v_l = g_switch_on ? (VIN - g_vout_sim) : (-g_vout_sim);
-              v_l = g_switch_on ? (VIN) : (VIN - g_vout_sim);
+              v_l = g_switch_on ? (VIN - g_vout_sim) : (-g_vout_sim);
+              //v_l = g_switch_on ? (VIN) : (VIN - g_vout_sim);
               // Corrente do capacitor
               i_c = g_il_sim - (g_vout_sim * INV_R_LOAD);
-              //i_c = g_switch_on ? (-g_vout_sim*INV_R_LOAD) : (g_il_sim - (g_vout_sim * INV_R_LOAD)) ;
+
               // Atualização via método de Euler
               g_il_sim += INV_L * v_l;
               g_vout_sim += INV_C * i_c;
@@ -81,10 +81,13 @@ void main(void)
               if(CMPSS_teste == 1){
                   DAC_setShadowValue(DAC1_BASE, 2000);
               }
-              else{
+              if(CMPSS_teste == 2){
                   // Clear trip flags
                   DAC_setShadowValue(DAC1_BASE, 100);
                   EPWM_clearTripZoneFlag(myEPWM0_BASE, EPWM_TZ_INTERRUPT | EPWM_TZ_FLAG_OST | EPWM_TZ_FLAG_DCAEVT1);
+              }
+              else{
+                  DAC_setShadowValue(DAC1_BASE, 100);
               }
 
               // Envia o valor de Vo para o ADC, ou seja, envia para o CLA para o controle do pwm
