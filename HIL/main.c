@@ -13,11 +13,11 @@
 //
 #define F_PWM                  10000.0f     // Frequência de chaveamento (Hz)
 #define T_PWM                  (1.0f / F_PWM) // Período de chaveamento (s)
-#define DT_SIM                 0.000001f    // Passo de simulação (5 µs)
+#define DT_SIM                 0.000003f    // Passo de simulação (5 µs)
 #define N_STEPS_PER_CYCLE      (uint32_t)(T_PWM / DT_SIM) // Passos por ciclo PWM
 
 // Parâmetros do Conversor Buck
-#define VIN                    40.0f       // Tensão de entrada (V)
+#define VIN                    12.0f       // Tensão de entrada (V)
 #define L                      0.001f      // Indutância (H)
 #define C                      0.00001f    // Capacitância (F)
 #define R_LOAD                 10.0f       // Carga resistiva (Ohm)
@@ -36,8 +36,9 @@ volatile bool g_switch_on = false;           // Estado da chave (true = ligada)
 volatile bool g_new_step_ready = false;      // Flag para novo passo de simulação
 
 float32_t v_l, i_c;                          // Variaveis para calculos
-volatile uint16_t dac;
-volatile uint16_t CMPSS_teste = 0;
+volatile uint16_t dac_v;
+volatile uint16_t CMPSS_teste = 0;           // Variavel para ativar o CMPSS
+volatile uint16_t dac_i;
 
 void main(void)
 {
@@ -61,49 +62,53 @@ void main(void)
               g_new_step_ready = false;
 
               // Tensão no indutor
-              v_l = g_switch_on ? (VIN - g_vout_sim) : (-g_vout_sim);
-              //v_l = g_switch_on ? (VIN) : (VIN - g_vout_sim);
+              v_l = g_switch_on ? (VIN) : (VIN - g_vout_sim);
+
               // Corrente do capacitor
-              i_c = g_il_sim - (g_vout_sim * INV_R_LOAD);
+              i_c = g_switch_on ?  (- g_vout_sim * INV_R_LOAD) : ( g_il_sim - (g_vout_sim * INV_R_LOAD) );
 
               // Atualização via método de Euler
               g_il_sim += INV_L * v_l;
               g_vout_sim += INV_C * i_c;
 
               // Verifica se a tensão é maior do que a escala
-              if(g_vout_sim > SCALE)
-                  dac = MAX_DAC_VAL;
+              if(g_vout_sim > SCALE_V)
+                  dac_v = MAX_DAC_VAL;
+              else if (g_vout_sim <= 0)
+                  dac_v = 0;
               else
-                  dac = (float)g_vout_sim * (float)DAC_TESTE;
+                  dac_v = (float)g_vout_sim * (float)DAC_TESTE;
 
+              // Verifica se a Corrente é maior do que a escala
+              if (g_il_sim > SCALE_I)
+                   dac_i = MAX_DAC_VAL;
+              else if (g_il_sim <= 0)
+                   dac_i = 0;
+              else
+                   dac_i = (float) g_il_sim * DAC_RESOLUTION_DA_I;
 
               // Teste do CMPSS
-              if(CMPSS_teste == 1){
-                  DAC_setShadowValue(DAC1_BASE, 2000);
+              if(CMPSS_teste == 1){ // Força um valor acima do CMPSS, ou seja, ativa o CMPSS para parar o codigo
+                  DAC_setShadowValue(DAC1_BASE, 4000);
               }
-              if(CMPSS_teste == 2){
+              else if(CMPSS_teste == 2){ // Caso Seja One-Shot isso faz com que reseta o EPWM
                   // Clear trip flags
-                  DAC_setShadowValue(DAC1_BASE, 100);
+                  DAC_setShadowValue(DAC1_BASE, (uint16_t) (dac_i));
                   EPWM_clearTripZoneFlag(myEPWM0_BASE, EPWM_TZ_INTERRUPT | EPWM_TZ_FLAG_OST | EPWM_TZ_FLAG_DCAEVT1);
               }
               else{
-                  DAC_setShadowValue(DAC1_BASE, 100);
+                  // Envia o valor da corrente
+                  DAC_setShadowValue(DAC1_BASE, (uint16_t) (dac_i));
               }
 
               // Envia o valor de Vo para o ADC, ou seja, envia para o CLA para o controle do pwm
-              DAC_setShadowValue(DAC0_BASE, (uint16_t) (dac));
+              DAC_setShadowValue(DAC0_BASE, (uint16_t) (dac_v));
 
              }
         }
 
 }
 
-// CLA para o calculo do controle, ativada com o pwm
-
-__interrupt void cla1Isr1 ()
-{
-    Interrupt_clearACKGroup(INT_myCLA01_INTERRUPT_ACK_GROUP);
-}
 
 // Detecta Borda de Subida e Descida para ter a leitura da chave
 

@@ -8,13 +8,12 @@
 #ifndef SHARED_VARS_H_
 #define SHARED_VARS_H_
 
-#define SCALE           50U      // Fundo de escala (V)
-#define MAX_DAC_VAL     4096U    // Shadow_value máximo do DAC
+#define SCALE_V           50U      // Fundo de escala da tensão (V)
+#define SCALE_I           10U    // Fundo de escala da corrente (A)
+#define MAX_DAC_VAL     4095U    // Shadow_value máximo do DAC
 
-#define ADC_RESOLUTION (SCALE/MAX_DAC_VAL)
-#define DAC_RESOLUTION (MAX_DAC_VAL/SCALE)
-#define ADC_TESTE 0.01221001221001221001221001221001
-#define DAC_TESTE 81.92
-
+#define ADC_TESTE ((float)SCALE_V/(float)MAX_DAC_VAL)
+#define DAC_TESTE ((float)MAX_DAC_VAL/(float)SCALE_V)
+#define DAC_RESOLUTION_DA_I ((float)MAX_DAC_VAL/(float)SCALE_I)
 
 #endif /* SHARED_VARS_H_ */
