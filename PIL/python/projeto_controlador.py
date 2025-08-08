@@ -4,12 +4,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Parâmetros do Boost
-fsw = 20000
-Vin = 10
+fsw = 10000
+Vin = 12
 Vout = 20    # Tensão desejada
-L = 400e-6
-C = 47e-6
-R = 20
+L = 1e-3
+C = 10e-6
+R = 10
 vcp = 1
 Tp = 1 / (2*np.pi*fsw*0.1)
 
